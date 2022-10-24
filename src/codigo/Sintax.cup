@@ -1,0 +1,111 @@
+package codigo;
+
+import java_cup.runtime.Symbol;
+import java_cup.runtime.*;
+import java_cup.parser;
+import java.io.*;
+import java.io.Reader;
+import java.util.Vector;
+
+action code{:
+TablaSimbolos ta = new TablaSimbolos();     
+objeto aux=null;
+:}
+
+parser code
+{:
+
+   
+    private Symbol s;
+    
+
+    public void syntax_error(Symbol s){
+        this.s = s;
+    }
+
+    public Symbol getS(){
+        return this.s;
+}
+:};
+
+terminal Linea, Comillas,ComillasSimples,Printf, T_dato, Int, CHAR,Flotante,Double,Cadena, If, Else, Do, While, For,
+    Igual, Suma, Resta, Multiplicacion, Division, Op_logico, Op_relacional,
+    Op_atribucion, Op_incremento, Op_booleano, Parentesis_a, Parentesis_c,
+    Llave_a, Llave_c, Corchete_a, Corchete_c, Main, P_coma, Identificador,Void,Comi,punto, Punto,
+    Numero, ERROR;
+non terminal INICIO, SENTENCIA, DECLARACION, DECLARACION_FOR, IF, IF_ELSE,
+    WHILE, DO_WHILE, FOR, SENTENCIA_BOOLEANA, SENTENCIA_FOR;
+
+start with INICIO;
+
+INICIO ::= 
+    Int Main Parentesis_a Parentesis_c Llave_a SENTENCIA Llave_c |
+    Main Parentesis_a Parentesis_c Llave_a SENTENCIA Llave_c |
+    Int Main Parentesis_a Parentesis_c Llave_a Llave_c |
+    Main Parentesis_a Parentesis_c Llave_a Llave_c  
+;
+SENTENCIA ::= 
+    SENTENCIA DECLARACION |
+    DECLARACION |
+    SENTENCIA IF | 
+    IF |
+    SENTENCIA IF_ELSE |
+    IF_ELSE |
+    SENTENCIA WHILE |
+    WHILE |
+    SENTENCIA DO_WHILE
+    DO_WHILE |
+    SENTENCIA FOR |
+    FOR
+;
+DECLARACION ::= 
+  
+    /*TIPOS DE DATOS INT*/
+    Int:v1 Identificador:iden {:aux=new objeto(iden.toString(),v1.toString());ta.agregar(aux);:} P_coma|
+    Int:tipoVariable Identificador:i1 Igual Numero:e1{:aux=new objeto(i1.toString(),tipoVariable.toString());aux.setValor(e1.toString());ta.agregar(aux);:}P_coma |
+    Identificador Igual Numero P_coma |
+    
+    /*TIPOS DE DATOS FLOAT*/
+    Flotante:vF Identificador:iden2{:aux=new objeto(iden2.toString(),vF.toString());ta.agregar(aux);:} P_coma |
+    Flotante:vF2 Identificador:iden3 Igual Numero:n1 Punto:p Numero:n2{:aux=new objeto(iden3.toString(),vF2.toString());aux.setValor(n1.toString()+p.toString()+n2.toString());ta.agregar(aux); :} P_coma|
+    Identificador Igual Numero Punto Numero P_coma |
+   
+     /*TIPOS DE DATOS DOUBLE*/
+    Double:vD Identificador:iden4 P_coma{: aux=new objeto(iden4.toString(),vD.toString());ta.agregar(aux);:} |
+    Double:vD2 Identificador:iden5 Igual Numero:n3 Punto:p2 Numero:n4{:aux=new objeto(iden5.toString(),vD2.toString());aux.setValor(n3.toString()+p2.toString()+n4.toString());ta.agregar(aux); :} P_coma |
+    
+    /*TIPOS DE DATOS CHAR*/
+    CHAR:vC Identificador:iden6 {:aux=new objeto(iden6.toString(),vC.toString());ta.agregar(aux);:}  P_coma| 
+    CHAR:vC2 Identificador:iden7 Igual ComillasSimples Identificador:valor ComillasSimples {:aux=new objeto(iden7.toString(),vC2.toString());aux.setValor(valor.toString());ta.agregar(aux); :} P_coma |
+    CHAR:vC3 Identificador:iden8 Igual ComillasSimples Numero:num ComillasSimples {:aux=new objeto(iden8.toString(),vC3.toString());aux.setValor(num.toString());ta.agregar(aux); :}P_coma |
+    Identificador Igual ComillasSimples Numero ComillasSimples P_coma |
+    Identificador Igual ComillasSimples Identificador ComillasSimples P_coma 
+
+;
+IF ::= If Parentesis_a SENTENCIA_BOOLEANA Parentesis_c Llave_a SENTENCIA Llave_c
+;
+SENTENCIA_BOOLEANA ::= 
+    Op_booleano | 
+    Identificador Op_relacional Op_booleano |
+    Identificador Op_relacional Numero |
+    Identificador Op_relacional Identificador |
+    Identificador Op_relacional Comillas Comillas |
+    Identificador Op_relacional Comillas Identificador Comillas
+;
+IF_ELSE ::= If Parentesis_a SENTENCIA_BOOLEANA Parentesis_c Llave_a SENTENCIA Llave_c Else Llave_a SENTENCIA Llave_c
+;
+WHILE ::= While Parentesis_a SENTENCIA_BOOLEANA Parentesis_c Llave_a SENTENCIA Llave_c
+;
+DO_WHILE ::= Do Llave_a SENTENCIA Llave_c While Parentesis_a SENTENCIA_BOOLEANA Parentesis_c P_coma
+;
+FOR ::= For Parentesis_a SENTENCIA_FOR Parentesis_c Llave_a SENTENCIA Llave_c
+;
+SENTENCIA_FOR ::=
+    T_dato Identificador Igual Numero P_coma SENTENCIA_BOOLEANA P_coma DECLARACION_FOR |
+    Identificador Igual Numero P_coma SENTENCIA_BOOLEANA P_coma DECLARACION_FOR
+;
+DECLARACION_FOR ::= 
+    Identificador Op_atribucion Numero |
+    Identificador Op_incremento | 
+    Op_incremento Identificador
+;
